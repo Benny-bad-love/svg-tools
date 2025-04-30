@@ -1,0 +1,42 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Collection Management Guide
+
+The application includes a complete system for organizing SVGs into collections and folders.
+
+## Collection Structure
+- Collections are defined in [app/types/index.ts](mdc:app/types/index.ts) with the following hierarchy:
+  - `Collection`: Top-level container with a name, ID, and array of folders
+  - `Folder`: Container within a collection with a name, ID, and array of SVG items
+  - `SVGItem`: Individual SVG with name, ID, SVG code, and metadata
+
+## State Management
+- Collection state is managed through [app/context/CollectionsContext.tsx](mdc:app/context/CollectionsContext.tsx)
+- The context provides:
+  - `collections`: Current collections array
+  - Active collection and folder tracking
+  - Functions for manipulating collections
+
+## Storage and Persistence
+- Collections are stored in localStorage using:
+  - `loadCollections`: Loads collections from localStorage
+  - `saveCollections`: Saves collections to localStorage
+- Each item includes a `sortOrder` property for maintaining order
+
+## Collection Operations
+The following operations are supported via [app/utils/collectionUtils.ts](mdc:app/utils/collectionUtils.ts):
+- Creating collections and folders
+- Saving SVGs to folders
+- Toggling open/closed state of collections and folders
+- Deleting collections, folders, and SVGs
+
+## User Interface
+- The collections UI is implemented in [app/components/CollectionSidebar.tsx](mdc:app/components/CollectionSidebar.tsx)
+- Features include:
+  - Collapsible sidebar with toggle button
+  - Collection and folder management
+  - SVG previews in the sidebar
+  - Drag and drop reordering

@@ -1,0 +1,34 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SVG Handling Guide
+
+This application provides tools for validating, previewing, and downloading SVG files.
+
+## SVG Validation and Processing
+- SVG validation is handled by [app/utils/svgUtils.ts](mdc:app/utils/svgUtils.ts)
+- Use the `validateSvg` function to check if SVG code is valid
+- The validation checks:
+  - Presence of SVG tags
+  - Valid XML structure
+  - Parser errors
+
+## SVG Download
+- SVG download is handled by the `downloadSvg` function in [app/utils/svgUtils.ts](mdc:app/utils/svgUtils.ts)
+- The function:
+  - Validates SVG before download
+  - Creates a blob from the SVG code
+  - Triggers a file download with the specified filename
+  - Supports confirmation for invalid SVGs
+
+## SVG Preview
+- SVG preview is implemented in [app/components/SvgEditor.tsx](mdc:app/components/SvgEditor.tsx)
+- Always render SVG preview inside a controlled container
+- Only show preview if the SVG is valid
+- Use dangerouslySetInnerHTML with caution for rendering SVG code
+
+## Example SVG
+- Example SVG loading is handled by `loadExampleSvg` in [app/utils/svgUtils.ts](mdc:app/utils/svgUtils.ts)
+- The example SVG is served from the public directory

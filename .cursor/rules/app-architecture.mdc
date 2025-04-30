@@ -1,0 +1,30 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SVG Tools App Architecture
+
+This Next.js application follows a modular structure with clear separation of concerns:
+
+## Core Structure
+- Entry point: [app/page.tsx](mdc:app/page.tsx) - Main page layout
+- Layout: [app/layout.tsx](mdc:app/layout.tsx) - Root layout with Geist fonts and AppProvider
+
+## Context System
+- [app/context/AppContext.tsx](mdc:app/context/AppContext.tsx) - Combined provider wrapping the app
+- [app/context/SvgContext.tsx](mdc:app/context/SvgContext.tsx) - State management for SVG editing
+- [app/context/CollectionsContext.tsx](mdc:app/context/CollectionsContext.tsx) - State management for collections
+
+## Components
+- [app/components/SvgEditor.tsx](mdc:app/components/SvgEditor.tsx) - SVG editing interface
+- [app/components/CollectionSidebar.tsx](mdc:app/components/CollectionSidebar.tsx) - Collections sidebar
+- [app/components/ChevronLeftIcon.tsx](mdc:app/components/ChevronLeftIcon.tsx) - Reusable icon component
+
+## Utilities
+- [app/utils/svgUtils.ts](mdc:app/utils/svgUtils.ts) - SVG validation and download functions
+- [app/utils/collectionUtils.ts](mdc:app/utils/collectionUtils.ts) - Collection management functions
+- [app/utils/dragDropUtils.ts](mdc:app/utils/dragDropUtils.ts) - Drag and drop functionality
+
+## Type Definitions
+- [app/types/index.ts](mdc:app/types/index.ts) - App-wide type definitions

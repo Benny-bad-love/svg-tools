@@ -1,0 +1,56 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Drag and Drop System Guide
+
+The application includes a robust drag and drop system for reordering collections, folders, and SVG items.
+
+## Drag and Drop Architecture
+- Drag and drop functionality is implemented in [app/utils/dragDropUtils.ts](mdc:app/utils/dragDropUtils.ts)
+- Types for drag items are defined in [app/types/index.ts](mdc:app/types/index.ts) with the `DragItem` type
+- The system is integrated into the UI via [app/components/CollectionSidebar.tsx](mdc:app/components/CollectionSidebar.tsx)
+
+## Core Functionality
+The drag and drop system supports:
+- Reordering collections at the top level
+- Reordering folders within collections
+- Reordering SVG items within folders
+
+## Implementation Details
+- Each draggable item has:
+  - `draggable={true}` attribute
+  - Event handlers for `onDragStart`, `onDragOver`, `onDragLeave`, `onDragEnd`, and `onDrop`
+  - Type identifier (`'collection'`, `'folder'`, or `'svg'`)
+  - CSS classes for visual feedback during drag operations
+  - Drag handle icon for easier dragging (for folders)
+
+## Drag State Management
+- Drag state is managed by `CollectionsContext` with:
+  - `draggedItem`: The item currently being dragged
+  - `dragOverItem`: The item currently being hovered over
+  - `handleItemDrop`: Function that processes the drop operation
+
+## Reordering Functions
+- `reorderCollections`: Reorders collections at the top level
+- `reorderFolders`: Reorders folders within a collection
+- `reorderSvgs`: Reorders SVG items within a folder
+- `handleDrop`: Dispatches to the appropriate reordering function
+
+## Important Constraints
+- Items can only be reordered within their own container:
+  - Collections can be reordered at the top level
+  - Folders can be reordered within their parent collection
+  - SVGs can be reordered within their parent folder
+- Dropping is restricted to items of the same type
+- Parent ID validation ensures items stay within their containers
+- Self-drop prevention avoids unnecessary operations
+
+## Visual Feedback
+- CSS classes provide visual feedback during dragging:
+  - `drag-target`: Applied to all draggable elements
+  - `drag-over`: Applied when dragging over a valid drop target
+  - Drop indicators show where items will be placed
+  - Distinct border and background changes for visual clarity
+  - Translucent drag handles that become opaque on hover

@@ -1,0 +1,45 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# State Management Guide
+
+This application uses React Context for state management with a structured approach.
+
+## Context Architecture
+- The app uses multiple context providers for different concerns:
+  - [app/context/SvgContext.tsx](mdc:app/context/SvgContext.tsx): SVG editing state
+  - [app/context/CollectionsContext.tsx](mdc:app/context/CollectionsContext.tsx): Collections management
+  - [app/context/AppContext.tsx](mdc:app/context/AppContext.tsx): Combined provider wrapper
+
+## Context Implementation Pattern
+Each context follows the same pattern:
+1. Define context types with a TypeScript interface
+2. Create context with `createContext`
+3. Implement provider component with state and functions
+4. Export a custom hook for consuming the context
+
+## State Organization
+- Keep related state in the same context
+- Use separate contexts for different domains of the application
+- Only store necessary state in context, keep component-specific state local
+
+## Context Consumer Pattern
+- Always use the custom hooks for accessing context
+  - `useSvg()` for SVG editing features
+  - `useCollections()` for collections management
+- Custom hooks provide type safety and error checking
+
+## Persistence Strategy
+- Use `localStorage` for client-side persistence
+- Load data on initial render with `useEffect`
+- Save data when state changes with dependency tracking
+
+## Adding New State
+When adding new application state:
+1. Determine which context it belongs to
+2. Update the context type definition
+3. Add state and related functions to the appropriate provider
+4. Update the context value object
+5. Consider persistence requirements

@@ -1,0 +1,44 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Component Development Guide
+
+This application follows a component-based architecture with reusable UI elements.
+
+## Component Organization
+- Components are stored in [app/components](mdc:app/components) directory
+- Each component has its own file with a clear, descriptive name
+- Components should be modular, reusable, and focused on a single responsibility
+
+## Main Components
+- [SvgEditor.tsx](mdc:app/components/SvgEditor.tsx): Core SVG editing interface
+  - Handles input, validation feedback, and preview
+  - Uses the SVG context for state management
+- [CollectionSidebar.tsx](mdc:app/components/CollectionSidebar.tsx): Collections management UI
+  - Implements the sidebar with collections, folders, and SVG items
+  - Handles drag and drop interactions
+  - Integrates with Collections context
+
+## Component Best Practices
+- Use functional components with TypeScript and React hooks
+- Keep components focused on a single responsibility
+- Extract repeated UI patterns into reusable components
+- Use context for shared state rather than prop drilling
+- Implement proper event handling with TypeScript types
+
+## UI Component Patterns
+- Consistent styling with Tailwind CSS
+- Responsive design considerations
+- Clear visual hierarchy
+- Feedback for user interactions
+- Proper error handling and validation
+
+## Adding New Components
+When adding new components:
+1. Place in the [app/components](mdc:app/components) directory
+2. Use TypeScript for props and state
+3. Follow existing patterns for context usage
+4. Ensure components are accessible
+5. Consider mobile responsiveness
