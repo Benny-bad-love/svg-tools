@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FolderIcon, ChevronRightIcon, ChevronDownIcon, PlusIcon, XMarkIcon, TrashIcon, ChevronLeftIcon, DragHandleIcon } from './Icons';
 import { useCollections } from "../context/CollectionsContext";
 import { useSvg } from "../context/SvgContext";
@@ -31,6 +31,10 @@ export const CollectionSidebar: React.FC = () => {
   const { svgCode, fileName, isValidSvg } = useSvg();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(288);
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
   const [showNewCollectionInput, setShowNewCollectionInput] = useState(false);
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
@@ -40,6 +44,39 @@ export const CollectionSidebar: React.FC = () => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  const minWidth = 200;
+  const maxWidth = 600;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const startResizing = useCallback((_mouseDownEvent: React.MouseEvent) => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (mouseMoveEvent: MouseEvent) => {
+      if (isResizing && sidebarRef.current) {
+        const newWidth = mouseMoveEvent.clientX - sidebarRef.current.getBoundingClientRect().left;
+        if (newWidth >= minWidth && newWidth <= maxWidth) {
+          setSidebarWidth(newWidth);
+        }
+      }
+    },
+    [isResizing]
+  );
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   const handleAddCollection = () => {
     if (!newCollectionName.trim()) return;
@@ -65,32 +102,25 @@ export const CollectionSidebar: React.FC = () => {
   };
 
   const handleDragStart = (e: React.DragEvent, type: 'collection' | 'folder' | 'svg', id: string, parentId?: string) => {
-    // Apply dragging class to source element for visual feedback
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.classList.add('dragging');
 
-      // For SVGs, set a custom drag image based on the SVG itself
       if (type === 'svg') {
-        // Try to create a drag image from the SVG content
         try {
           const svgEl = e.currentTarget.querySelector('div[dangerouslySetInnerHTML]');
           if (svgEl) {
-            // Use the SVG element as the drag image
             e.dataTransfer.setDragImage(svgEl, 20, 20);
           }
         } catch {
-          // Fallback - use default drag behavior
           console.log('Could not set custom drag image');
         }
       }
     }
 
-    // Mark that we're in a drag operation
     setIsDragging(true);
     setDraggedItem({ type, id, parentId });
     e.dataTransfer.setData('text/plain', JSON.stringify({ type, id, parentId }));
 
-    // Set effect to move
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -98,19 +128,15 @@ export const CollectionSidebar: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!draggedItem) return; // Not dragging anything
-    if (draggedItem.id === id && draggedItem.type === type) return; // Can't drop on self
+    if (!draggedItem) return;
+    if (draggedItem.id === id && draggedItem.type === type) return;
 
-    // STRICT TYPE MATCHING - only allow dropping on same type
     if (draggedItem.type !== type) return;
 
-    // For folders, ensure they're in the same collection
     if (type === 'folder' && draggedItem.parentId !== parentId) return;
 
-    // For SVGs, ensure they're in the same folder
     if (type === 'svg' && draggedItem.parentId !== parentId) return;
 
-    // Set the potential drop target in state
     if (dragOverItem?.id !== id || dragOverItem?.type !== type) {
       setDragOverItem({ type, id, parentId });
     }
@@ -119,15 +145,12 @@ export const CollectionSidebar: React.FC = () => {
   };
 
   const handleDragLeave = () => {
-    // We don't need to do anything in this handler
-    // as state updates in handleDragOver handle the visual indicator
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.classList.remove('dragging');
     }
-    // Clear drag state
     setIsDragging(false);
     setDraggedItem(null);
     setDragOverItem(null);
@@ -136,9 +159,8 @@ export const CollectionSidebar: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Context function `handleItemDrop` uses draggedItem and dragOverItem from state
     handleItemDrop();
-    // State clearing is now handled in handleDragEnd
+    handleDragEnd(e);
   };
 
   return (
@@ -148,12 +170,10 @@ export const CollectionSidebar: React.FC = () => {
           transition: opacity 0.2s, transform 0.1s;
           position: relative;
         }
-        /* Base style for all drop targets */
         .drag-target.is-drop-target {
           box-shadow: 0 0 0 2px #10b981;
           z-index: 5;
         }
-        /* Line above drop target */
         .drag-target.is-drop-target::before {
           content: '';
           position: absolute;
@@ -165,13 +185,11 @@ export const CollectionSidebar: React.FC = () => {
           z-index: 1;
           border-radius: 2px;
         }
-        /* Collection-specific styles */
         .drag-target[data-type="collection"].is-drop-target {
           transform: translateY(2px);
           background-color: rgba(16, 185, 129, 0.15) !important;
           border-color: #10b981 !important;
         }
-        /* Custom indicator for collections */
         .drag-target[data-type="collection"].is-drop-target::before {
           height: 4px;
           top: -1px;
@@ -180,22 +198,18 @@ export const CollectionSidebar: React.FC = () => {
           background-color: #10b981;
           border-radius: 2px;
         }
-        /* Collection being dragged */
         .drag-target[data-type="collection"].dragging {
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        /* Folder-specific styles */
         .drag-target[data-type="folder"].is-drop-target {
           background-color: rgba(16, 185, 129, 0.05);
           transform: translateX(2px);
         }
-        /* SVG-specific styles */
         .drag-target[data-type="svg"].is-drop-target {
           background-color: rgba(16, 185, 129, 0.1);
           transform: scale(1.05);
           border-color: #10b981 !important;
         }
-        /* Override positioning for SVG drop indicator line */
         .drag-target[data-type="svg"].is-drop-target::before {
           height: 3px;
           top: -1px;
@@ -204,25 +218,30 @@ export const CollectionSidebar: React.FC = () => {
           border-top-left-radius: 4px;
           border-top-right-radius: 4px;
         }
-        /* Element being dragged */
         .dragging {
           opacity: 0.4;
           cursor: grabbing;
         }
-        /* SVG specific dragging style */
         .drag-target[data-type="svg"].dragging {
           transform: scale(0.95);
           opacity: 0.6;
         }
       `}</style>
 
-      <aside
-        className={`h-screen bg-gray-100 dark:bg-gray-900 overflow-y-auto transition-all duration-300 ${
-          sidebarOpen ? "w-72" : "w-0"
-        }`}
+      <div
+        ref={sidebarRef}
+        className={`h-screen flex flex-shrink-0 transition-all duration-100 ${isResizing ? '!duration-0' : ''}`}
+        style={{ width: sidebarOpen ? `${sidebarWidth}px` : '0px' }}
       >
-        {sidebarOpen && (
-          <div className="p-4">
+        <aside
+          className={`relative h-full bg-gray-100 dark:bg-gray-900 overflow-y-auto flex-1 flex flex-col transition-opacity duration-100 ${
+            sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          } ${
+            isResizing ? 'select-none' : ''
+          }`}
+          style={{ width: `${sidebarWidth}px` }}
+        >
+          <div className="p-4 flex-1 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">Collections</h2>
               <button
@@ -234,7 +253,6 @@ export const CollectionSidebar: React.FC = () => {
               </button>
             </div>
 
-            {/* New Collection Input */}
             {showNewCollectionInput && (
               <div className="mb-4 p-2 border rounded bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
                 <div className="flex gap-2">
@@ -273,7 +291,6 @@ export const CollectionSidebar: React.FC = () => {
               </div>
             )}
 
-            {/* Collections List */}
             <div className="space-y-2">
               {collections
                 .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -297,23 +314,23 @@ export const CollectionSidebar: React.FC = () => {
                     data-type="collection"
                     draggable={true}
                     onDragStart={(e) => {
-                      e.stopPropagation(); // Prevent event bubbling
+                      e.stopPropagation();
                       handleDragStart(e, 'collection', collection.id);
                     }}
                     onDragOver={(e) => {
-                      e.stopPropagation(); // Prevent event bubbling
+                      e.stopPropagation();
                       handleDragOver(e, 'collection', collection.id);
                     }}
                     onDragLeave={(e) => {
-                      e.stopPropagation(); // Prevent event bubbling
+                      e.stopPropagation();
                       handleDragLeave();
                     }}
                     onDragEnd={(e) => {
-                      e.stopPropagation(); // Prevent event bubbling
+                      e.stopPropagation();
                       handleDragEnd(e);
                     }}
                     onDrop={(e) => {
-                      e.stopPropagation(); // Prevent event bubbling
+                      e.stopPropagation();
                       handleDrop(e);
                     }}
                   >
@@ -365,7 +382,6 @@ export const CollectionSidebar: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* New Folder Input */}
                   {showNewFolderInput && activeCollection === collection.id && (
                     <div className="p-2 bg-gray-100 dark:bg-gray-900 border-t dark:border-gray-700">
                       <div className="flex gap-2">
@@ -404,7 +420,6 @@ export const CollectionSidebar: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Folders */}
                   {collection.isOpen && (
                     <div className="p-2 bg-gray-50 dark:bg-gray-900">
                       {collection.folders.length === 0 ? (
@@ -416,7 +431,7 @@ export const CollectionSidebar: React.FC = () => {
                             .map(folder => (
                             <div
                               key={folder.id}
-                              className={`ml-2 drag-target border rounded ${
+                              className={`ml-2 drag-target ${
                                 dragOverItem?.type === 'folder' && dragOverItem?.id === folder.id ? 'is-drop-target' : ''
                               }`}
                               data-type="folder"
@@ -486,15 +501,11 @@ export const CollectionSidebar: React.FC = () => {
                                 </div>
                               </div>
 
-                              {/* SVG Items */}
                               {folder.isOpen && (
                                 <div
                                   className="ml-6 mt-1 grid grid-cols-2 gap-2"
                                   onDragOver={(e) => {
-                                    // Prevent the event from bubbling up to the folder
                                     e.stopPropagation();
-                                    // Only prevent default if we're dragging an SVG
-                                    // to allow the grid to be a drop target for SVGs
                                     if (draggedItem?.type === 'svg') {
                                       e.preventDefault();
                                     }
@@ -538,22 +549,17 @@ export const CollectionSidebar: React.FC = () => {
                                           e.stopPropagation();
                                           handleDrop(e);
                                         }}
-                                        // Add direct load method on mousedown for more responsive clicking
                                         onMouseDown={(e) => {
-                                          // Only proceed if left mouse button (main button)
                                           if (e.button === 0) {
-                                            // Target is the drag handle - don't trigger click
                                             const isHandle = (e.target as HTMLElement).closest('.drag-handle') !== null;
                                             const isDelBtn = (e.target as HTMLElement).closest('.delete-btn') !== null;
 
                                             if (!isHandle && !isDelBtn) {
-                                              // Don't do anything for drag handles or delete button
                                               console.log('SVG mousedown (not on handle)');
                                             }
                                           }
                                         }}
                                         onClick={(e) => {
-                                          // Target is the drag handle - don't trigger click
                                           const isHandle = (e.target as HTMLElement).closest('.drag-handle') !== null;
                                           const isDelBtn = (e.target as HTMLElement).closest('.delete-btn') !== null;
 
@@ -565,12 +571,10 @@ export const CollectionSidebar: React.FC = () => {
                                           }
                                         }}
                                       >
-                                        {/* Drag handle for SVG */}
                                         <div
                                           className="drag-handle absolute top-1 left-1 cursor-move opacity-30 hover:opacity-100 z-10 bg-white/70 dark:bg-gray-800/70 rounded-full p-0.5"
                                           title="Drag to reorder"
                                           onMouseDown={(e) => {
-                                            // Only stop propagation on the drag handle
                                             e.stopPropagation();
                                             console.log('Drag handle mousedown');
                                           }}
@@ -617,12 +621,20 @@ export const CollectionSidebar: React.FC = () => {
               )}
             </div>
           </div>
+        </aside>
+
+        {sidebarOpen && (
+          <div
+            className="w-1.5 h-full cursor-col-resize bg-gray-300 dark:bg-gray-700 hover:bg-blue-500 active:bg-blue-600 transition-colors duration-100 flex-shrink-0"
+            onMouseDown={startResizing}
+          />
         )}
-      </aside>
+      </div>
 
       <button
         onClick={toggleSidebar}
-        className="absolute top-4 left-0 p-2 bg-white dark:bg-gray-800 rounded-r-lg shadow z-10"
+        className={`fixed top-4 p-2 bg-white dark:bg-gray-800 rounded-lg shadow z-20 transition-all duration-300 ease-in-out`}
+        style={{ left: sidebarOpen ? `${sidebarWidth + 8}px` : '8px' }}
         title={sidebarOpen ? "Hide Collections" : "Show Collections"}
       >
         {sidebarOpen ? (
