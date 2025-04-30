@@ -39,7 +39,7 @@ export default function Home() {
         setIsValidSvg(true);
         setValidationMessage("");
       }
-    } catch (error) {
+    } catch {
       setIsValidSvg(false);
       setValidationMessage("Error validating SVG");
     }
