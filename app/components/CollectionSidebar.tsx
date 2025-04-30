@@ -519,7 +519,7 @@ export const CollectionSidebar: React.FC = () => {
                                       .map(item => (
                                       <div
                                         key={item.id}
-                                        className={`drag-target relative border rounded p-1 cursor-pointer ${
+                                        className={`drag-target aspect-square relative border rounded p-1 cursor-pointer ${
                                           svgCode === item.svgCode
                                             ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/10"
                                             : "hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -583,7 +583,7 @@ export const CollectionSidebar: React.FC = () => {
                                         </div>
 
                                         <div
-                                          className="w-full h-16 flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden"
+                                          className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 overflow-hidden"
                                           dangerouslySetInnerHTML={{ __html: item.svgCode }}
                                         ></div>
                                         <p className="text-xs mt-1 truncate">{item.name}</p>
